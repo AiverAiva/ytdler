@@ -26,8 +26,8 @@
             class="w-full bg-blue-600 text-white font-semibold py-2 rounded-lg shadow-md hover:bg-blue-700 transition duration-300">
             Download
         </button>
-
         <p id="message" class="text-gray-700 mt-4"></p>
+        <div id="alert" class="hidden p-4 mb-4 text-sm rounded-lg" role="alert"></div>
     </div>
 
     <script>
@@ -35,6 +35,14 @@
             const url = document.getElementById('youtubeUrl').value;
             const format = document.getElementById('format').value;
             const message = document.getElementById('message');
+            const alertElement = document.getElementById('alert');
+
+            function showAlert(message, type) {
+                alertElement.innerHTML = message;
+                alertElement.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'text-green-800 bg-green-50 dark:bg-gray-800 dark:text-green-400' : 'text-red-800 bg-red-50 dark:bg-gray-800 dark:text-red-400'}`;
+                alertElement.classList.remove('hidden'); // Show the alert
+            }
+
             message.innerText = "Processing...";
 
             try {
@@ -64,14 +72,15 @@
                     a.remove();
 
                     window.URL.revokeObjectURL(downloadUrl);
-                    message.innerText = "Download started!";
+                    showAlert("Download Successfully!", 'success'); // Show success alert
                 } else {
-                    message.innerText = "Download failed!";
+                    showAlert("Download failed! Please check the URL and try again.", 'error'); // Show error alert
                 }
             } catch (error) {
-                message.innerText = "An error occurred.";
+                showAlert("An error occurred.", 'error'); // Show error alert
                 console.error(error);
             }
+            message.innerText = "";
         }
     </script>
 </body>
