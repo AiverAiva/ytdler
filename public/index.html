@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Downloader</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gradient-to-r from-blue-500 to-purple-600 h-screen flex items-center justify-center">
+
+    <div class="bg-white shadow-lg rounded-lg p-8 max-w-sm w-full text-center">
+        <h1 class="text-2xl font-bold text-gray-800 mb-4">YouTube Video Downloader</h1>
+
+        <input type="text" id="youtubeUrl" placeholder="Enter YouTube URL"
+            class="w-full px-4 py-2 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+
+        <select id="format"
+            class="w-full px-4 py-2 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="mp3">MP3</option>
+            <option value="mp4">MP4</option>
+        </select>
+
+        <button onclick="downloadVideo()"
+            class="w-full bg-blue-600 text-white font-semibold py-2 rounded-lg shadow-md hover:bg-blue-700 transition duration-300">
+            Download
+        </button>
+
+        <p id="message" class="text-gray-700 mt-4"></p>
+    </div>
+
+    <script>
+        async function downloadVideo() {
+            const url = document.getElementById('youtubeUrl').value;
+            const format = document.getElementById('format').value;
+            const message = document.getElementById('message');
+            message.innerText = "Processing...";
+
+            try {
+                const response = await fetch(`/download?url=${encodeURIComponent(url)}&format=${format}`);
+
+                if (response.ok) {
+                    const disposition = response.headers.get('Content-Disposition');
+                    let filename = 'downloaded_file'; // Fallback filename
+
+                    // Extract filename from the Content-Disposition header
+                    if (disposition && disposition.includes('attachment')) {
+                        const matches = /filename="([^"]+)"/.exec(disposition);
+                        if (matches != null && matches[1]) {
+                            filename = matches[1];
+                        }
+                    }
+
+                    const blob = await response.blob();
+
+                    // Create a download link
+                    const downloadUrl = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = downloadUrl;
+                    a.download = filename; // Use the extracted filename
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+
+                    window.URL.revokeObjectURL(downloadUrl);
+                    message.innerText = "Download started!";
+                } else {
+                    message.innerText = "Download failed!";
+                }
+            } catch (error) {
+                message.innerText = "An error occurred.";
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+
+</html>
